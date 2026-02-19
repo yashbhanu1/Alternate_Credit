@@ -66,6 +66,8 @@ export interface RawSignals {
   description: string;
   monthlyIncome: number; // NEW: Explicitly tracked income for affordability checks
   requestedLoanAmount?: number; // The amount the user wants to borrow
+  aadharNumber?: string;
+  panNumber?: string;
   
   // Categorized Signals
   financial: {

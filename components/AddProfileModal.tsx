@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Plus, Trash2, Calculator, Sparkles, AlertTriangle, Smartphone, MapPin, Phone, Users, CheckSquare, Square, IndianRupee, Wand2, RefreshCw, UploadCloud, FileText } from 'lucide-react';
+import { X, Plus, Trash2, Calculator, Sparkles, AlertTriangle, Smartphone, MapPin, Phone, Users, CheckSquare, Square, IndianRupee, Wand2, RefreshCw, UploadCloud, FileText, CreditCard } from 'lucide-react';
 import { RawSignals } from '../types';
 
 interface AddProfileModalProps {
@@ -15,6 +15,8 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
   const [name, setName] = useState('');
   const [occupation, setOccupation] = useState('');
   const [requestedLoanAmount, setRequestedLoanAmount] = useState(50000);
+  const [aadhar, setAadhar] = useState('');
+  const [pan, setPan] = useState('');
 
   // Simulation State
   const [income, setIncome] = useState(20000);
@@ -140,6 +142,8 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
             description: `Generated ${riskLevel} Risk Profile.`,
             monthlyIncome: income,
             requestedLoanAmount,
+            aadharNumber: aadhar,
+            panNumber: pan,
             financial: {
                 transactions: generateTransactions(income, estExpense, isRisky),
                 loanRepaymentScore: isSafe ? 0.9 : isRisky ? 0.4 : 0.7
@@ -165,7 +169,7 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
             },
             social: {
                 socialConnectionsScore: 0.7,
-                identityVerified: true,
+                identityVerified: !!(aadhar && pan),
                 emailAgeMonths: isSafe ? 48 : 12
             },
             public: {
@@ -236,6 +240,8 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
             description: `Manual Profile: ${emiDefaults > 0 ? 'History of defaults.' : 'Good repayment history.'} ${bankStatementFile ? 'Verified via Bank Statement.' : ''} ${hasCallPermission ? (callTrust > 0.7 ? 'Strong social circle detected.' : 'High volume of unknown calls.') : 'Call data not shared.'}`,
             monthlyIncome: manualIncome,
             requestedLoanAmount,
+            aadharNumber: aadhar,
+            panNumber: pan,
             financial: {
                 transactions: generateTransactions(manualIncome, totalManualExpenses, emiDefaults > 0),
                 loanRepaymentScore: loanScore
@@ -261,7 +267,7 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
             },
             social: {
                 socialConnectionsScore: Math.min(1, socialScore + profBonus),
-                identityVerified: true,
+                identityVerified: !!(aadhar && pan),
                 emailAgeMonths: deviceAge * 2
             },
             public: {
@@ -287,6 +293,8 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
     setName('');
     setOccupation('');
     setRequestedLoanAmount(50000);
+    setAadhar('');
+    setPan('');
     setBankStatementFile(null);
   };
 
@@ -355,6 +363,34 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
                                 className="w-full pl-9 p-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 font-bold text-slate-700"
                                 value={requestedLoanAmount}
                                 onChange={e => setRequestedLoanAmount(Number(e.target.value))}
+                            />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Aadhar Number</label>
+                         <div className="relative">
+                            <CreditCard size={16} className="absolute left-3 top-3 text-slate-400" />
+                            <input 
+                                type="text" 
+                                maxLength={12}
+                                className="w-full pl-9 p-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50"
+                                placeholder="12-digit number"
+                                value={aadhar}
+                                onChange={e => setAadhar(e.target.value.replace(/\D/g,''))}
+                            />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">PAN Number</label>
+                         <div className="relative">
+                            <CreditCard size={16} className="absolute left-3 top-3 text-slate-400" />
+                            <input 
+                                type="text" 
+                                maxLength={10}
+                                className="w-full pl-9 p-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50"
+                                placeholder="ABCDE1234F"
+                                value={pan}
+                                onChange={e => setPan(e.target.value.toUpperCase())}
                             />
                         </div>
                     </div>

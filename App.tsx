@@ -10,7 +10,7 @@ import { FeatureCard } from './components/FeatureCard';
 import { SignalGroup } from './components/SignalGroup';
 import { AddProfileModal } from './components/AddProfileModal';
 import { ChatSupport } from './components/ChatSupport';
-import { Wallet, ShieldCheck, Smartphone, Activity, Sparkles, AlertCircle, Wifi, Users, Globe, Plus, CheckCircle, Fingerprint, Banknote, ArrowRight } from 'lucide-react';
+import { Wallet, ShieldCheck, Smartphone, Activity, Sparkles, AlertCircle, Wifi, Users, Globe, Plus, CheckCircle, Fingerprint, Banknote, ArrowRight, X, RefreshCw, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 const App: React.FC = () => {
   const [profiles, setProfiles] = useState<RawSignals[]>(DEMO_PROFILES);
@@ -19,6 +19,7 @@ const App: React.FC = () => {
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
   const [loadingAI, setLoadingAI] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [manualDecision, setManualDecision] = useState<'approved' | 'rejected' | null>(null);
 
   useEffect(() => {
     if (selectedProfile) {
@@ -26,6 +27,7 @@ const App: React.FC = () => {
       const score = calculateTrustScore(features);
       setScoreResult(score);
       setAiAnalysis(null);
+      setManualDecision(null);
     }
   }, [selectedProfile]);
 
@@ -98,12 +100,16 @@ const App: React.FC = () => {
 
               {/* Loan Decision Card */}
               <div className={`relative overflow-hidden p-6 rounded-3xl border-2 transition-all duration-300 shadow-sm hover:shadow-md ${
+                manualDecision === 'approved' ? 'bg-white border-emerald-500 ring-4 ring-emerald-500/10' :
+                manualDecision === 'rejected' ? 'bg-white border-rose-500 ring-4 ring-rose-500/10' :
                 loanEval.status === 'approved' ? 'bg-white border-emerald-100' :
                 loanEval.status === 'rejected' ? 'bg-white border-rose-100' :
                 'bg-white border-amber-100'
               }`}>
                 {/* Decorative background blob */}
                 <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-10 ${
+                   manualDecision === 'approved' ? 'bg-emerald-600' :
+                   manualDecision === 'rejected' ? 'bg-rose-600' :
                    loanEval.status === 'approved' ? 'bg-emerald-500' :
                    loanEval.status === 'rejected' ? 'bg-rose-500' :
                    'bg-amber-500'
@@ -114,11 +120,12 @@ const App: React.FC = () => {
                     <Banknote size={20} className="text-slate-400"/> Loan Decision
                   </h3>
                   <span className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wide shadow-sm ${
+                    manualDecision ? (manualDecision === 'approved' ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white') :
                     loanEval.status === 'approved' ? 'bg-emerald-500 text-white' :
                     loanEval.status === 'rejected' ? 'bg-rose-500 text-white' :
                     'bg-amber-500 text-white'
                   }`}>
-                    {loanEval.status}
+                    {manualDecision ? manualDecision.toUpperCase() : loanEval.status}
                   </span>
                 </div>
 
@@ -147,6 +154,44 @@ const App: React.FC = () => {
                     <p className="text-xs font-medium text-slate-500 leading-relaxed">
                         {loanEval.reason}
                     </p>
+                  </div>
+
+                  {/* Manual Decision Controls */}
+                  <div className="pt-4 mt-2 border-t border-slate-100">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Manual Override</p>
+                    
+                    {!manualDecision ? (
+                        <div className="flex gap-3">
+                            <button 
+                                onClick={() => setManualDecision('approved')}
+                                className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl font-bold text-xs shadow-lg shadow-emerald-200 transition-all flex items-center justify-center gap-2"
+                            >
+                                <ThumbsUp size={14} /> Approve
+                            </button>
+                            <button 
+                                onClick={() => setManualDecision('rejected')}
+                                className="flex-1 py-2.5 bg-white border border-slate-200 text-slate-600 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 active:scale-95 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2"
+                            >
+                                <ThumbsDown size={14} /> Reject
+                            </button>
+                        </div>
+                    ) : (
+                        <div className={`w-full py-3 rounded-xl font-bold text-center text-xs flex items-center justify-center gap-2 animate-in zoom-in duration-200 ${
+                            manualDecision === 'approved' 
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                                : 'bg-rose-50 text-rose-700 border border-rose-200'
+                        }`}>
+                            {manualDecision === 'approved' ? <CheckCircle size={14}/> : <X size={14}/>}
+                            <span>Final Decision: {manualDecision === 'approved' ? 'APPROVED' : 'REJECTED'}</span>
+                            <button 
+                                onClick={() => setManualDecision(null)}
+                                className="ml-2 p-1 hover:bg-black/5 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
+                                title="Reset Decision"
+                            >
+                                <RefreshCw size={12}/>
+                            </button>
+                        </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -324,6 +369,8 @@ const App: React.FC = () => {
                   { label: 'Network Score', value: selectedProfile.social.socialConnectionsScore.toFixed(2) },
                   { label: 'ID Verified', value: selectedProfile.social.identityVerified },
                   { label: 'Property Owner', value: selectedProfile.public.propertyOwnership },
+                  ...(selectedProfile.aadharNumber ? [{ label: 'Aadhar', value: '•••• ' + selectedProfile.aadharNumber.slice(-4) }] : []),
+                  ...(selectedProfile.panNumber ? [{ label: 'PAN', value: selectedProfile.panNumber }] : [])
                 ]}
               />
             </div>
