@@ -9,6 +9,7 @@ import { ProfileSelector } from './components/ProfileSelector';
 import { FeatureCard } from './components/FeatureCard';
 import { SignalGroup } from './components/SignalGroup';
 import { AddProfileModal } from './components/AddProfileModal';
+import { ChatSupport } from './components/ChatSupport';
 import { Wallet, ShieldCheck, Smartphone, Activity, Sparkles, AlertCircle, Wifi, Users, Globe, Plus, CheckCircle, Fingerprint } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -291,6 +292,7 @@ const App: React.FC = () => {
         onClose={() => setIsModalOpen(false)}
         onAdd={handleAddProfile}
       />
+      <ChatSupport />
     </div>
   );
 };
