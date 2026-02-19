@@ -66,17 +66,19 @@ const App: React.FC = () => {
               <ShieldCheck size={22} />
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-none">CreditPulse AI</h1>
+              <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-none">INNOVIX AI</h1>
               <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mt-1">Alternative Scoring Engine</p>
             </div>
           </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all font-semibold text-sm shadow-xl shadow-slate-900/10 hover:scale-105 active:scale-95"
-          >
-            <Plus size={16} />
-            New Simulation
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all font-semibold text-sm shadow-xl shadow-slate-900/10 hover:scale-105 active:scale-95"
+            >
+              <Plus size={16} />
+              New Simulation
+            </button>
+          </div>
         </div>
       </header>
 
@@ -334,6 +336,7 @@ const App: React.FC = () => {
         onClose={() => setIsModalOpen(false)}
         onAdd={handleAddProfile}
       />
+      
       <ChatSupport />
     </div>
   );

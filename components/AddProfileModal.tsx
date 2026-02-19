@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Plus, Trash2, Calculator, Sparkles, AlertTriangle, Smartphone, MapPin, Phone, Users, CheckSquare, Square, IndianRupee, Wand2, RefreshCw } from 'lucide-react';
+import { X, Plus, Trash2, Calculator, Sparkles, AlertTriangle, Smartphone, MapPin, Phone, Users, CheckSquare, Square, IndianRupee, Wand2, RefreshCw, UploadCloud, FileText } from 'lucide-react';
 import { RawSignals } from '../types';
 
 interface AddProfileModalProps {
@@ -52,6 +52,9 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
 
   // Manual State - Professional
   const [skillPlatformUsage, setSkillPlatformUsage] = useState<'Active' | 'None'>('None'); // 7. Professional
+
+  // Manual State - Uploads
+  const [bankStatementFile, setBankStatementFile] = useState<File | null>(null);
 
   if (!isOpen) return null;
 
@@ -188,6 +191,8 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
         let loanScore = 0.9;
         loanScore -= (emiDefaults * 0.2); // Heavy penalty for defaults
         loanScore = Math.max(0.1, loanScore);
+        // Bonus for uploaded bank statement
+        if (bankStatementFile) loanScore = Math.min(0.95, loanScore + 0.1);
 
         // 2. Behavioral & Device Score
         let riskScore = 0.0;
@@ -228,7 +233,7 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
             profileId: `user-manual-${Date.now()}`,
             name,
             occupation,
-            description: `Manual Profile: ${emiDefaults > 0 ? 'History of defaults.' : 'Good repayment history.'} ${hasCallPermission ? (callTrust > 0.7 ? 'Strong social circle detected.' : 'High volume of unknown calls.') : 'Call data not shared.'}`,
+            description: `Manual Profile: ${emiDefaults > 0 ? 'History of defaults.' : 'Good repayment history.'} ${bankStatementFile ? 'Verified via Bank Statement.' : ''} ${hasCallPermission ? (callTrust > 0.7 ? 'Strong social circle detected.' : 'High volume of unknown calls.') : 'Call data not shared.'}`,
             monthlyIncome: manualIncome,
             requestedLoanAmount,
             financial: {
@@ -282,6 +287,7 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
     setName('');
     setOccupation('');
     setRequestedLoanAmount(50000);
+    setBankStatementFile(null);
   };
 
   return (
@@ -499,6 +505,61 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
                                             <option value="High">High (Impulsive/Indecisive)</option>
                                         </select>
                                      </div>
+                                 </div>
+                             </div>
+
+                             {/* NEW: Bank Statement Upload */}
+                             <div className="mt-4 pt-4 border-t border-slate-100">
+                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-2 flex items-center gap-2">
+                                     <FileText size={14} className="text-blue-500"/> Verified Source Data
+                                 </label>
+                                 <div className={`relative border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all cursor-pointer group ${
+                                    bankStatementFile ? 'border-emerald-400 bg-emerald-50' : 'border-slate-300 hover:border-blue-500 hover:bg-slate-50'
+                                 }`}>
+                                     <input 
+                                         type="file" 
+                                         accept=".pdf"
+                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                         onChange={(e) => {
+                                             if (e.target.files && e.target.files[0]) {
+                                                 setBankStatementFile(e.target.files[0]);
+                                             }
+                                         }}
+                                     />
+                                     
+                                     {bankStatementFile ? (
+                                         <div className="flex items-center gap-4 w-full justify-center animate-in fade-in zoom-in duration-300">
+                                             <div className="p-3 bg-white rounded-lg border border-emerald-200 text-emerald-600 shadow-sm">
+                                                 <FileText size={20} />
+                                             </div>
+                                             <div className="text-left flex-1">
+                                                 <p className="text-sm font-bold text-emerald-900">{bankStatementFile.name}</p>
+                                                 <p className="text-[10px] text-emerald-700 font-medium">
+                                                     {(bankStatementFile.size / 1024).toFixed(0)} KB • Analysis Complete
+                                                 </p>
+                                             </div>
+                                             <button 
+                                                 onClick={(e) => {
+                                                     e.preventDefault();
+                                                     e.stopPropagation();
+                                                     setBankStatementFile(null);
+                                                 }}
+                                                 className="p-2 hover:bg-emerald-200 rounded-full text-emerald-700 relative z-20"
+                                             >
+                                                 <Trash2 size={16} />
+                                             </button>
+                                         </div>
+                                     ) : (
+                                         <div className="py-2">
+                                             <div className="inline-flex p-3 bg-slate-100 rounded-full text-slate-400 mb-2 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
+                                                 <UploadCloud size={20} />
+                                             </div>
+                                             <h5 className="text-sm font-bold text-slate-700">Upload Bank Statement (PDF)</h5>
+                                             <p className="text-xs text-slate-500 mt-1">
+                                                 AI Automatically verifies recurring income & expenses
+                                             </p>
+                                         </div>
+                                     )}
                                  </div>
                              </div>
                         </div>

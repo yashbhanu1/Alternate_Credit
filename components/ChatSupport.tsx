@@ -10,7 +10,7 @@ interface Message {
 export const ChatSupport: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', text: 'Hi! I am the CreditPulse support assistant. How can I help you understand your trust score today?' }
+    { role: 'model', text: 'Hi! I am the INNOVIX support assistant. How can I help you understand your trust score today?' }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -35,7 +35,7 @@ export const ChatSupport: React.FC = () => {
     return ai.chats.create({
       model: 'gemini-3-flash-preview',
       config: {
-        systemInstruction: "You are a friendly and knowledgeable support agent for CreditPulse AI. CreditPulse AI helps underbanked users in India get credit scores based on alternative data like utility bills, phone usage, and social connections, rather than just credit bureau history. Help users understand terms like 'Trust Score', 'Digital Affinity', and 'Stability Score'. Explain that a higher score leads to better loan terms. Keep responses concise, encouraging, and easy to understand for someone with potentially limited financial literacy.",
+        systemInstruction: "You are a friendly and knowledgeable support agent for INNOVIX AI. INNOVIX AI helps underbanked users in India get credit scores based on alternative data like utility bills, phone usage, and social connections, rather than just credit bureau history. Help users understand terms like 'Trust Score', 'Digital Affinity', and 'Stability Score'. Explain that a higher score leads to better loan terms. Keep responses concise, encouraging, and easy to understand for someone with potentially limited financial literacy.",
       },
     });
   };
@@ -112,7 +112,7 @@ export const ChatSupport: React.FC = () => {
                 <Bot size={20} />
               </div>
               <div>
-                <h3 className="font-bold text-sm">CreditPulse Assistant</h3>
+                <h3 className="font-bold text-sm">INNOVIX Assistant</h3>
                 <p className="text-xs text-blue-100 opacity-90 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span> Online
                 </p>
