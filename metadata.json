@@ -1,0 +1,5 @@
+{
+  "name": "Copy of TrustFlow AI",
+  "description": "An alternative credit scoring engine for the underbanked, using behavioral signals and Gemini-powered explainability.",
+  "requestFramePermissions": []
+}
