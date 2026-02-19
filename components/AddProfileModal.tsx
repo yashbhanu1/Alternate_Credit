@@ -383,21 +383,21 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
                              </div>
                              
                              <div className="grid md:grid-cols-2 gap-6">
-                                 <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3">
-                                    <h5 className="text-xs font-bold text-slate-500 uppercase">Cashflow</h5>
+                                 <div className="bg-slate-100 rounded-xl p-4 border border-slate-200 space-y-3">
+                                    <h5 className="text-xs font-bold text-slate-700 uppercase">Cashflow</h5>
                                     <div className="flex justify-between items-center mb-2">
-                                         <span className="text-xs font-semibold text-slate-600">Monthly Income</span>
+                                         <span className="text-xs font-bold text-slate-700">Monthly Income</span>
                                          <div className="flex gap-2">
                                              <input 
                                                 type="number"
-                                                className="w-28 p-1.5 text-right text-sm font-bold rounded border border-slate-300"
+                                                className="w-28 p-1.5 text-right text-sm font-bold rounded border border-slate-300 bg-white"
                                                 value={manualIncome}
                                                 onChange={e => setManualIncome(Number(e.target.value))}
                                              />
                                              <button 
                                                 type="button" 
                                                 onClick={estimateIncome}
-                                                className="p-1.5 bg-slate-100 text-slate-500 rounded hover:bg-slate-200"
+                                                className="p-1.5 bg-white border border-slate-200 text-slate-500 rounded hover:bg-slate-50"
                                                 title="Auto-estimate"
                                              >
                                                 <Wand2 size={14} />
@@ -410,14 +410,14 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
                                                 <input 
                                                     type="text"
                                                     placeholder="Category"
-                                                    className="flex-1 p-2 text-xs rounded border border-slate-200"
+                                                    className="flex-1 p-2 text-xs rounded border border-slate-200 bg-white"
                                                     value={item.label}
                                                     onChange={e => updateExpenseItem(item.id, 'label', e.target.value)}
                                                 />
                                                 <input 
                                                     type="number"
                                                     placeholder="Amt"
-                                                    className="w-20 p-2 text-xs text-right rounded border border-slate-200"
+                                                    className="w-20 p-2 text-xs text-right rounded border border-slate-200 bg-white"
                                                     value={item.amount}
                                                     onChange={e => updateExpenseItem(item.id, 'amount', Number(e.target.value))}
                                                 />
@@ -432,11 +432,11 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
                                     </button>
                                  </div>
 
-                                 <div className="space-y-4">
+                                 <div className="bg-slate-100 rounded-xl p-4 border border-slate-200 space-y-4">
                                      <div>
-                                        <label className="block text-xs font-semibold text-slate-600 mb-1">Past Year EMI Defaults</label>
+                                        <label className="block text-xs font-semibold text-slate-700 mb-1">Past Year EMI Defaults</label>
                                         <select 
-                                            className="w-full p-2.5 rounded-lg border border-slate-200 text-sm"
+                                            className="w-full p-2.5 rounded-lg border border-slate-200 text-sm bg-white"
                                             value={emiDefaults}
                                             onChange={(e: any) => setEmiDefaults(Number(e.target.value))}
                                         >
@@ -447,18 +447,18 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
                                         </select>
                                      </div>
                                      <div>
-                                        <label className="block text-xs font-semibold text-slate-600 mb-1">Active Subscriptions (OTT/Apps)</label>
+                                        <label className="block text-xs font-semibold text-slate-700 mb-1">Active Subscriptions (OTT/Apps)</label>
                                         <input 
                                             type="number"
-                                            className="w-full p-2.5 rounded-lg border border-slate-200 text-sm"
+                                            className="w-full p-2.5 rounded-lg border border-slate-200 text-sm bg-white"
                                             value={ottCount}
                                             onChange={e => setOttCount(Number(e.target.value))}
                                         />
                                      </div>
                                      <div>
-                                        <label className="block text-xs font-semibold text-slate-600 mb-1">Refund/Return Frequency</label>
+                                        <label className="block text-xs font-semibold text-slate-700 mb-1">Refund/Return Frequency</label>
                                         <select 
-                                            className="w-full p-2.5 rounded-lg border border-slate-200 text-sm"
+                                            className="w-full p-2.5 rounded-lg border border-slate-200 text-sm bg-white"
                                             value={refundFreq}
                                             onChange={(e: any) => setRefundFreq(e.target.value)}
                                         >
@@ -478,33 +478,33 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
                                 <h4 className="text-sm font-bold text-slate-700 uppercase">2. Device & Digital Stability</h4>
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                <div className="p-3 border border-slate-200 rounded-lg">
-                                    <label className="block text-xs font-semibold text-slate-500 mb-2">Device Security</label>
+                                <div className="p-3 bg-slate-100 border border-slate-200 rounded-lg">
+                                    <label className="block text-xs font-semibold text-slate-700 mb-2">Device Security</label>
                                     <label className="flex items-center gap-2 cursor-pointer">
                                         <input 
                                             type="checkbox" 
                                             checked={deviceRooted} 
                                             onChange={e => setDeviceRooted(e.target.checked)}
-                                            className="w-4 h-4 text-purple-600 rounded" 
+                                            className="w-4 h-4 text-purple-600 rounded bg-white" 
                                         />
                                         <span className="text-sm font-medium text-slate-700">Rooted / Jailbroken</span>
                                     </label>
                                     {deviceRooted && <span className="text-xs text-red-500 mt-1 block flex items-center gap-1"><AlertTriangle size={10}/> Fraud Risk</span>}
                                 </div>
-                                <div className="p-3 border border-slate-200 rounded-lg">
-                                    <label className="block text-xs font-semibold text-slate-500 mb-1">Device Age (Months)</label>
-                                    <input type="number" value={deviceAge} onChange={e => setDeviceAge(Number(e.target.value))} className="w-full p-1.5 border border-slate-200 rounded text-sm"/>
+                                <div className="p-3 bg-slate-100 border border-slate-200 rounded-lg">
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1">Device Age (Months)</label>
+                                    <input type="number" value={deviceAge} onChange={e => setDeviceAge(Number(e.target.value))} className="w-full p-1.5 border border-slate-200 rounded text-sm bg-white"/>
                                 </div>
-                                <div className="p-3 border border-slate-200 rounded-lg">
-                                    <label className="block text-xs font-semibold text-slate-500 mb-1">App Install/Delete Rate</label>
-                                    <select value={appInstallRate} onChange={(e: any) => setAppInstallRate(e.target.value)} className="w-full p-1.5 border border-slate-200 rounded text-sm">
+                                <div className="p-3 bg-slate-100 border border-slate-200 rounded-lg">
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1">App Install/Delete Rate</label>
+                                    <select value={appInstallRate} onChange={(e: any) => setAppInstallRate(e.target.value)} className="w-full p-1.5 border border-slate-200 rounded text-sm bg-white">
                                         <option value="Stable">Stable</option>
                                         <option value="Volatile">High Churn</option>
                                     </select>
                                 </div>
-                                <div className="p-3 border border-slate-200 rounded-lg">
-                                    <label className="block text-xs font-semibold text-slate-500 mb-1">Daily Screen Time (Hrs)</label>
-                                    <input type="number" value={screenTime} onChange={e => setScreenTime(Number(e.target.value))} className="w-full p-1.5 border border-slate-200 rounded text-sm"/>
+                                <div className="p-3 bg-slate-100 border border-slate-200 rounded-lg">
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1">Daily Screen Time (Hrs)</label>
+                                    <input type="number" value={screenTime} onChange={e => setScreenTime(Number(e.target.value))} className="w-full p-1.5 border border-slate-200 rounded text-sm bg-white"/>
                                 </div>
                             </div>
                         </div>
@@ -566,4 +566,4 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
       </div>
     </div>
   );
-};
+}
