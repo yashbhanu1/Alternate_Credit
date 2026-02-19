@@ -1,6 +1,6 @@
 import React from 'react';
 import { RawSignals } from '../types';
-import { User, Briefcase, GraduationCap, Home } from 'lucide-react';
+import { User, Briefcase, GraduationCap, Home, Crown } from 'lucide-react';
 
 interface ProfileSelectorProps {
   profiles: RawSignals[];
@@ -14,12 +14,13 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ profiles, sele
       case 'gig-worker': return <Briefcase size={18} />;
       case 'student': return <GraduationCap size={18} />;
       case 'homemaker': return <Home size={18} />;
+      case 'chairperson': return <Crown size={18} />;
       default: return <User size={18} />;
     }
   };
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+    <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
       {profiles.map((p) => (
         <button
           key={p.profileId}

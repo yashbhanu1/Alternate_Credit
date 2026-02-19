@@ -232,5 +232,63 @@ export const DEMO_PROFILES: RawSignals[] = [
       navPathConfusionScore: 0.05, // Very focused usage
       sensorSteadinessScore: 0.9 // Stable
     }
+  },
+  {
+    profileId: 'chairperson',
+    name: "Savitri Devi",
+    occupation: "SHG Group Leader",
+    description: "Community pillar. Organizes weekly savings meetings. Trusted guarantor for 20+ members.",
+    monthlyIncome: 32000,
+    requestedLoanAmount: 150000,
+    financial: {
+      loanRepaymentScore: 0.95,
+      transactions: [
+        { month: 'Jan', income: 30000, expenses: 15000, upiVolume: 200, eodBalance: 15000 },
+        { month: 'Feb', income: 32000, expenses: 16000, upiVolume: 180, eodBalance: 31000 },
+        { month: 'Mar', income: 31000, expenses: 14000, upiVolume: 210, eodBalance: 48000 },
+        { month: 'Apr', income: 33000, expenses: 15500, upiVolume: 190, eodBalance: 65500 },
+        { month: 'May', income: 32000, expenses: 15000, upiVolume: 200, eodBalance: 82500 },
+        { month: 'Jun', income: 34000, expenses: 16000, upiVolume: 220, eodBalance: 100500 },
+      ]
+    },
+    telecom: {
+      phoneNumberAgeMonths: 96,
+      avgRechargeAmount: 599,
+      dataUsageGB: 25,
+      roamingDays: 5,
+      callConsistencyScore: 0.99
+    },
+    utilities: {
+      totalBills: 36,
+      onTimePayments: 36,
+      utilityTypes: ["Electricity", "Community Hall", "Water"]
+    },
+    digital: {
+      appUsageScore: 0.7,
+      ecommerceSpendRatio: 0.1,
+      browserHistoryRiskScore: 0.0,
+      deviceSwitchCountYear: 0,
+      locationConsistencyScore: 0.9
+    },
+    social: {
+      socialConnectionsScore: 0.98,
+      identityVerified: true,
+      emailAgeMonths: 24
+    },
+    public: {
+      propertyOwnership: true,
+      businessRegistered: true, // SHG Registration
+      noCriminalRecord: true
+    },
+    employment: {
+      tenureMonths: 180,
+      isSalaried: false
+    },
+    behavioral: {
+      avgSessionTimeSeconds: 180,
+      typingSpeedScore: 0.65,
+      navPathConfusionScore: 0.05,
+      sensorSteadinessScore: 0.9
+    }
   }
 ];
