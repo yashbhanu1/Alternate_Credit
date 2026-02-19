@@ -38,6 +38,12 @@ export interface SocialData {
   emailAgeMonths: number;
 }
 
+// New Interface for Flats
+export interface FlatProperty {
+  bhk: number;
+  estimatedValue: number;
+}
+
 // 5. Public Records
 export interface PublicRecordData {
   propertyOwnership: boolean;
@@ -45,6 +51,8 @@ export interface PublicRecordData {
   noCriminalRecord: boolean;
   propertyLocation?: 'Urban' | 'Rural'; // NEW: For high value loan assessment
   estimatedPropertyValue?: number; // NEW: Estimated collateral value
+  propertySizeAcres?: number; // NEW: Property size
+  ownedFlats?: FlatProperty[]; // NEW: List of flats
 }
 
 // 6. Employment & Income

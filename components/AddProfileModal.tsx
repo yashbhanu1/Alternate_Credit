@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { X, Plus, Trash2, Calculator, Sparkles, AlertTriangle, Smartphone, MapPin, Phone, Users, CheckSquare, Square, IndianRupee, Wand2, RefreshCw, UploadCloud, FileText, CreditCard, Home, CheckCircle } from 'lucide-react';
-import { RawSignals } from '../types';
+import { X, Plus, Trash2, Calculator, Sparkles, AlertTriangle, Smartphone, MapPin, Phone, Users, CheckSquare, Square, IndianRupee, Wand2, RefreshCw, UploadCloud, FileText, CreditCard, Home, CheckCircle, Building } from 'lucide-react';
+import { RawSignals, FlatProperty } from '../types';
 
 interface AddProfileModalProps {
   isOpen: boolean;
@@ -62,6 +62,9 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
   const [isPropertyOwner, setIsPropertyOwner] = useState(false);
   const [propertyLocation, setPropertyLocation] = useState<'Urban' | 'Rural'>('Rural');
   const [propertyProofFile, setPropertyProofFile] = useState<File | null>(null);
+  const [propertyAcres, setPropertyAcres] = useState<string>('');
+  const [propertyValue, setPropertyValue] = useState<string>('');
+  const [flats, setFlats] = useState<{id: number, bhk: string, value: string}[]>([]);
 
   if (!isOpen) return null;
 
@@ -80,6 +83,18 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
     setExpenseItems(expenseItems.map(item => 
       item.id === id ? { ...item, [field]: value } : item
     ));
+  };
+
+  const addFlat = () => {
+    setFlats([...flats, { id: Date.now(), bhk: '', value: '' }]);
+  };
+
+  const removeFlat = (id: number) => {
+    setFlats(flats.filter(f => f.id !== id));
+  };
+
+  const updateFlat = (id: number, field: 'bhk' | 'value', value: string) => {
+    setFlats(flats.map(f => f.id === id ? { ...f, [field]: value } : f));
   };
 
   const generateTransactions = (baseIncome: number, baseExpense: number, isVolatile: boolean) => {
@@ -138,7 +153,26 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
     // Property Logic for High Value Loans
     const finalPropertyOwnership = isHighValueLoan ? isPropertyOwner : (mode === 'manual' ? residenceType === 'Owned' : riskLevel === 'Low');
     const finalPropertyLocation = isHighValueLoan ? propertyLocation : (riskLevel === 'Low' ? 'Urban' : 'Rural');
-    const estimatedVal = finalPropertyLocation === 'Urban' ? 5000000 : 1500000;
+    
+    // Calculate total value: Land (if any) + Flats
+    let landValue = 0;
+    if (isHighValueLoan && propertyValue) {
+        landValue = Number(propertyValue);
+    } else if (isHighValueLoan && isPropertyOwner && flats.length === 0) {
+        // Default assumption if only checkbox checked but no details
+        landValue = finalPropertyLocation === 'Urban' ? 5000000 : 1500000;
+    } else if (!isHighValueLoan && finalPropertyOwnership) {
+        // Simulation default
+        landValue = finalPropertyLocation === 'Urban' ? 5000000 : 1500000;
+    }
+
+    const flatObjects: FlatProperty[] = flats.map(f => ({ 
+        bhk: Number(f.bhk) || 0, 
+        estimatedValue: Number(f.value) || 0 
+    }));
+    const totalFlatsValue = flatObjects.reduce((acc, f) => acc + f.estimatedValue, 0);
+    
+    const finalEstimatedValue = landValue + totalFlatsValue;
 
     if (mode === 'simulation') {
         const isRisky = riskLevel === 'High';
@@ -186,7 +220,9 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
             public: {
                 propertyOwnership: finalPropertyOwnership,
                 propertyLocation: finalPropertyOwnership ? finalPropertyLocation : undefined,
-                estimatedPropertyValue: finalPropertyOwnership ? estimatedVal : undefined,
+                estimatedPropertyValue: finalPropertyOwnership ? finalEstimatedValue : undefined,
+                propertySizeAcres: (isHighValueLoan && propertyAcres) ? Number(propertyAcres) : undefined,
+                ownedFlats: (isHighValueLoan && isPropertyOwner && flatObjects.length > 0) ? flatObjects : undefined,
                 businessRegistered: false,
                 noCriminalRecord: true
             },
@@ -286,7 +322,9 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
             public: {
                 propertyOwnership: isOwner,
                 propertyLocation: isOwner ? finalPropertyLocation : undefined,
-                estimatedPropertyValue: isOwner ? estimatedVal : undefined,
+                estimatedPropertyValue: isOwner ? finalEstimatedValue : undefined,
+                propertySizeAcres: (isHighValueLoan && isOwner && propertyAcres) ? Number(propertyAcres) : undefined,
+                ownedFlats: (isHighValueLoan && isOwner && flatObjects.length > 0) ? flatObjects : undefined,
                 businessRegistered: false,
                 noCriminalRecord: true
             },
@@ -313,6 +351,9 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
     setBankStatementFile(null);
     setPropertyProofFile(null);
     setIsPropertyOwner(false);
+    setPropertyAcres('');
+    setPropertyValue('');
+    setFlats([]);
   };
 
   return (
@@ -459,6 +500,78 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
                                             <p className="text-[10px] text-slate-400 mt-1">
                                                 * Urban properties typically offer higher valuation and easier liquidity for loan collateral.
                                             </p>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3 mt-3">
+                                            <div>
+                                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Property Size (Acres)</label>
+                                                <input 
+                                                    type="number" 
+                                                    className="w-full p-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
+                                                    placeholder="e.g. 0.5"
+                                                    value={propertyAcres}
+                                                    onChange={e => setPropertyAcres(e.target.value)}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Est. Land/Primary Value (₹)</label>
+                                                <div className="relative">
+                                                     <IndianRupee size={14} className="absolute left-3 top-3 text-slate-400" />
+                                                     <input 
+                                                        type="number" 
+                                                        className="w-full pl-8 p-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
+                                                        placeholder="e.g. 5000000"
+                                                        value={propertyValue}
+                                                        onChange={e => setPropertyValue(e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Flats Section */}
+                                        <div className="pt-2">
+                                            <label className="block text-xs font-bold text-slate-500 uppercase mb-2 flex items-center gap-2">
+                                                <Building size={14} className="text-amber-600" /> Owned Flats
+                                            </label>
+                                            <div className="space-y-2 mb-2">
+                                                {flats.map(flat => (
+                                                    <div key={flat.id} className="flex gap-2 items-center">
+                                                        <div className="w-20">
+                                                             <input 
+                                                                placeholder="BHK" 
+                                                                className="w-full p-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
+                                                                type="number"
+                                                                value={flat.bhk} 
+                                                                onChange={e => updateFlat(flat.id, 'bhk', e.target.value)} 
+                                                            />
+                                                        </div>
+                                                        <div className="flex-1 relative">
+                                                             <IndianRupee size={12} className="absolute left-3 top-3 text-slate-400" />
+                                                             <input 
+                                                                placeholder="Est. Value" 
+                                                                className="w-full p-2 pl-7 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
+                                                                type="number"
+                                                                value={flat.value} 
+                                                                onChange={e => updateFlat(flat.id, 'value', e.target.value)} 
+                                                            />
+                                                        </div>
+                                                        <button 
+                                                            type="button" 
+                                                            onClick={() => removeFlat(flat.id)}
+                                                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg"
+                                                        >
+                                                            <Trash2 size={16}/>
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <button 
+                                                type="button" 
+                                                onClick={addFlat} 
+                                                className="text-xs text-blue-600 font-bold flex items-center gap-1 hover:bg-blue-50 px-2 py-1 rounded"
+                                            >
+                                                <Plus size={14} /> Add Flat
+                                            </button>
                                         </div>
 
                                         <div>
