@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Plus, Trash2, Calculator, Sparkles, AlertTriangle, Smartphone, Briefcase, MapPin, Wifi, Activity, IndianRupee, Wand2 } from 'lucide-react';
+import { X, Plus, Trash2, Calculator, Sparkles, AlertTriangle, Smartphone, MapPin, Phone, Users, CheckSquare, Square, IndianRupee, Wand2 } from 'lucide-react';
 import { RawSignals } from '../types';
 
 interface AddProfileModalProps {
@@ -38,9 +38,11 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
   const [deviceRooted, setDeviceRooted] = useState(false); // 3. Technical Stability
   const [deviceAge, setDeviceAge] = useState(18); // 3. Device Age (months)
   
-  // Manual State - Behavioral
+  // Manual State - Behavioral & Calls (NEW)
   const [screenTime, setScreenTime] = useState(4); // 4. Interaction Metrics
-  const [appInstallRate, setAppInstallRate] = useState<'Stable' | 'Volatile'>('Stable'); // 3/4. Stability
+  const [hasCallPermission, setHasCallPermission] = useState(false); // Permission
+  const [contactCallHours, setContactCallHours] = useState(5); // Trust signal
+  const [unknownCallHours, setUnknownCallHours] = useState(1); // Risk signal
   
   // Manual State - Mobility & Social
   const [residenceType, setResidenceType] = useState<'Owned' | 'Rented' | 'Family'>('Rented'); // 6. Stability
@@ -177,7 +179,20 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
         let riskScore = 0.0;
         if (deviceRooted) riskScore += 0.8;
         if (refundFreq === 'High') riskScore += 0.3;
-        if (appInstallRate === 'Volatile') riskScore += 0.2;
+        
+        // NEW: Call Analysis Logic
+        let callTrust = 0.5; // Default neutral
+        if (hasCallPermission) {
+             const totalHours = contactCallHours + unknownCallHours;
+             const contactRatio = totalHours > 0 ? contactCallHours / totalHours : 0;
+             
+             callTrust = contactRatio; // Higher is better (more known contacts)
+             
+             // Risk Penalty for high unknown calls (Spam/Collections/Fraud risk)
+             if (contactRatio < 0.4) {
+                 riskScore += 0.3; 
+             }
+        }
         riskScore = Math.min(1.0, riskScore);
 
         // 3. Stability Mapping
@@ -186,7 +201,10 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
         const locationConsistency = (isStableCommute ? 0.4 : 0) + (isOwner ? 0.5 : 0.1);
 
         // 4. Social & Professional
-        const socialScore = socialConnectLevel === 'High' ? 0.9 : socialConnectLevel === 'Medium' ? 0.6 : 0.3;
+        let socialScore = socialConnectLevel === 'High' ? 0.9 : socialConnectLevel === 'Medium' ? 0.6 : 0.3;
+        // Boost social score if they have high contact hours (Real network)
+        if (hasCallPermission && contactCallHours > 10) socialScore += 0.15;
+        
         const profBonus = skillPlatformUsage === 'Active' ? 0.2 : 0;
         
         // 5. Tech/Nav
@@ -196,7 +214,7 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
             profileId: `user-manual-${Date.now()}`,
             name,
             occupation,
-            description: `Manual Profile: ${emiDefaults > 0 ? 'History of defaults.' : 'Good repayment history.'} ${deviceRooted ? 'High risk device detected.' : 'Secure device.'}`,
+            description: `Manual Profile: ${emiDefaults > 0 ? 'History of defaults.' : 'Good repayment history.'} ${hasCallPermission ? (callTrust > 0.7 ? 'Strong social circle detected.' : 'High volume of unknown calls.') : 'Call data not shared.'}`,
             monthlyIncome: manualIncome,
             requestedLoanAmount,
             financial: {
@@ -208,7 +226,7 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
                 avgRechargeAmount: ottCount > 2 ? 600 : 300,
                 dataUsageGB: screenTime * 5,
                 roamingDays: commuteRegularity === 'Erratic' ? 10 : 2,
-                callConsistencyScore: 0.85
+                callConsistencyScore: callTrust // Mapped from Contacts/Unknown ratio
             },
             utilities: {
                 totalBills: 12,
@@ -216,9 +234,9 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
                 utilityTypes: ["Electricity", "Mobile", ...(ottCount > 0 ? ["Streaming"] : [])]
             },
             digital: {
-                appUsageScore: appInstallRate === 'Stable' ? 0.8 : 0.4,
+                appUsageScore: 0.7, // Default
                 ecommerceSpendRatio: refundFreq === 'High' ? 0.4 : 0.15,
-                browserHistoryRiskScore: riskScore,
+                browserHistoryRiskScore: riskScore, // Affected by Call Risk
                 deviceSwitchCountYear: deviceAge < 6 ? 2 : 0,
                 locationConsistencyScore: locationConsistency
             },
@@ -496,15 +514,61 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
                                     <input type="number" value={deviceAge} onChange={e => setDeviceAge(Number(e.target.value))} className="w-full p-1.5 border border-slate-200 rounded text-sm bg-white"/>
                                 </div>
                                 <div className="p-3 bg-slate-100 border border-slate-200 rounded-lg">
-                                    <label className="block text-xs font-semibold text-slate-700 mb-1">App Install/Delete Rate</label>
-                                    <select value={appInstallRate} onChange={(e: any) => setAppInstallRate(e.target.value)} className="w-full p-1.5 border border-slate-200 rounded text-sm bg-white">
-                                        <option value="Stable">Stable</option>
-                                        <option value="Volatile">High Churn</option>
-                                    </select>
-                                </div>
-                                <div className="p-3 bg-slate-100 border border-slate-200 rounded-lg">
                                     <label className="block text-xs font-semibold text-slate-700 mb-1">Daily Screen Time (Hrs)</label>
                                     <input type="number" value={screenTime} onChange={e => setScreenTime(Number(e.target.value))} className="w-full p-1.5 border border-slate-200 rounded text-sm bg-white"/>
+                                </div>
+                                
+                                {/* NEW Call History Section - Spans Full Width */}
+                                <div className="col-span-2 md:col-span-3 p-4 bg-purple-50 border border-purple-100 rounded-xl space-y-3">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex items-center gap-2">
+                                            <Phone size={16} className="text-purple-600"/>
+                                            <h5 className="text-sm font-bold text-purple-900">Call History Analysis</h5>
+                                        </div>
+                                        <label className="flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-purple-200 shadow-sm hover:bg-purple-50 transition-colors">
+                                            {hasCallPermission ? <CheckSquare size={16} className="text-purple-600"/> : <Square size={16} className="text-slate-400"/>}
+                                            <input 
+                                                type="checkbox" 
+                                                className="hidden" 
+                                                checked={hasCallPermission} 
+                                                onChange={e => setHasCallPermission(e.target.checked)} 
+                                            />
+                                            <span className="text-xs font-bold text-slate-600">I agree to share Contacts & Call Logs</span>
+                                        </label>
+                                    </div>
+                                    
+                                    {!hasCallPermission ? (
+                                        <p className="text-xs text-purple-600/70 italic flex items-center gap-1">
+                                            <AlertTriangle size={12}/> Enable to improve Trust Score with social graph data.
+                                        </p>
+                                    ) : (
+                                        <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
+                                            <div>
+                                                <label className="block text-xs font-bold text-emerald-700 mb-1 flex items-center gap-1">
+                                                    <Users size={12}/> Wkly Hours (Contacts)
+                                                </label>
+                                                <input 
+                                                    type="number" 
+                                                    value={contactCallHours} 
+                                                    onChange={e => setContactCallHours(Number(e.target.value))} 
+                                                    className="w-full p-2 border border-emerald-200 bg-emerald-50/50 rounded text-sm focus:ring-emerald-500"
+                                                />
+                                                <span className="text-[10px] text-emerald-600">High = Trustworthy</span>
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-bold text-rose-700 mb-1 flex items-center gap-1">
+                                                    <AlertTriangle size={12}/> Wkly Hours (Unknown)
+                                                </label>
+                                                <input 
+                                                    type="number" 
+                                                    value={unknownCallHours} 
+                                                    onChange={e => setUnknownCallHours(Number(e.target.value))} 
+                                                    className="w-full p-2 border border-rose-200 bg-rose-50/50 rounded text-sm focus:ring-rose-500"
+                                                />
+                                                <span className="text-[10px] text-rose-600">High = Potential Risk</span>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
