@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Plus, Trash2, Calculator, Sparkles, AlertTriangle, Smartphone, MapPin, Phone, Users, CheckSquare, Square, IndianRupee, Wand2, RefreshCw, UploadCloud, FileText, CreditCard } from 'lucide-react';
+import { X, Plus, Trash2, Calculator, Sparkles, AlertTriangle, Smartphone, MapPin, Phone, Users, CheckSquare, Square, IndianRupee, Wand2, RefreshCw, UploadCloud, FileText, CreditCard, Home, CheckCircle } from 'lucide-react';
 import { RawSignals } from '../types';
 
 interface AddProfileModalProps {
@@ -57,10 +57,16 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
 
   // Manual State - Uploads
   const [bankStatementFile, setBankStatementFile] = useState<File | null>(null);
+  
+  // High Value Loan Property Logic
+  const [isPropertyOwner, setIsPropertyOwner] = useState(false);
+  const [propertyLocation, setPropertyLocation] = useState<'Urban' | 'Rural'>('Rural');
+  const [propertyProofFile, setPropertyProofFile] = useState<File | null>(null);
 
   if (!isOpen) return null;
 
   const totalManualExpenses = expenseItems.reduce((sum, item) => sum + item.amount, 0);
+  const isHighValueLoan = requestedLoanAmount > 500000;
 
   const addExpenseItem = () => {
     setExpenseItems([...expenseItems, { id: Date.now(), label: '', amount: 0 }]);
@@ -128,6 +134,11 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
     e.preventDefault();
     
     let newProfile: RawSignals;
+    
+    // Property Logic for High Value Loans
+    const finalPropertyOwnership = isHighValueLoan ? isPropertyOwner : (mode === 'manual' ? residenceType === 'Owned' : riskLevel === 'Low');
+    const finalPropertyLocation = isHighValueLoan ? propertyLocation : (riskLevel === 'Low' ? 'Urban' : 'Rural');
+    const estimatedVal = finalPropertyLocation === 'Urban' ? 5000000 : 1500000;
 
     if (mode === 'simulation') {
         const isRisky = riskLevel === 'High';
@@ -173,7 +184,9 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
                 emailAgeMonths: isSafe ? 48 : 12
             },
             public: {
-                propertyOwnership: isSafe,
+                propertyOwnership: finalPropertyOwnership,
+                propertyLocation: finalPropertyOwnership ? finalPropertyLocation : undefined,
+                estimatedPropertyValue: finalPropertyOwnership ? estimatedVal : undefined,
                 businessRegistered: false,
                 noCriminalRecord: true
             },
@@ -220,7 +233,7 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
 
         // 3. Stability Mapping
         const isStableCommute = commuteRegularity === 'Regular';
-        const isOwner = residenceType === 'Owned' || residenceType === 'Family';
+        const isOwner = isHighValueLoan ? isPropertyOwner : (residenceType === 'Owned' || residenceType === 'Family');
         const locationConsistency = (isStableCommute ? 0.4 : 0) + (isOwner ? 0.5 : 0.1);
 
         // 4. Social & Professional
@@ -237,7 +250,7 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
             profileId: `user-manual-${Date.now()}`,
             name,
             occupation,
-            description: `Manual Profile: ${emiDefaults > 0 ? 'History of defaults.' : 'Good repayment history.'} ${bankStatementFile ? 'Verified via Bank Statement.' : ''} ${hasCallPermission ? (callTrust > 0.7 ? 'Strong social circle detected.' : 'High volume of unknown calls.') : 'Call data not shared.'}`,
+            description: `Manual Profile: ${emiDefaults > 0 ? 'History of defaults.' : 'Good repayment history.'} ${bankStatementFile ? 'Verified via Bank Statement.' : ''} ${hasCallPermission ? (callTrust > 0.7 ? 'Strong social circle detected.' : 'High volume of unknown calls.') : 'Call data not shared.'} ${isHighValueLoan && isPropertyOwner ? `Backed by ${propertyLocation} property.` : ''}`,
             monthlyIncome: manualIncome,
             requestedLoanAmount,
             aadharNumber: aadhar,
@@ -271,7 +284,9 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
                 emailAgeMonths: deviceAge * 2
             },
             public: {
-                propertyOwnership: residenceType === 'Owned',
+                propertyOwnership: isOwner,
+                propertyLocation: isOwner ? finalPropertyLocation : undefined,
+                estimatedPropertyValue: isOwner ? estimatedVal : undefined,
                 businessRegistered: false,
                 noCriminalRecord: true
             },
@@ -296,6 +311,8 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
     setAadhar('');
     setPan('');
     setBankStatementFile(null);
+    setPropertyProofFile(null);
+    setIsPropertyOwner(false);
   };
 
   return (
@@ -395,6 +412,90 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
                         </div>
                     </div>
                 </div>
+
+                {/* High Value Loan Warning & Requirement */}
+                {isHighValueLoan && (
+                    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 shadow-sm space-y-4">
+                            <div className="flex items-center gap-2 text-amber-800">
+                                <Home size={20} />
+                                <h4 className="font-bold text-sm uppercase tracking-wide">High Value Loan Requirement</h4>
+                            </div>
+                            <p className="text-xs text-amber-700">
+                                Loans exceeding ₹5,00,000 require proof of property ownership for collateral assessment.
+                            </p>
+                            
+                            <div className="space-y-4 pt-2">
+                                <label className="flex items-center gap-2 cursor-pointer bg-white p-3 rounded-lg border border-amber-200 hover:border-amber-400 transition-colors">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={isPropertyOwner} 
+                                        onChange={(e) => setIsPropertyOwner(e.target.checked)}
+                                        className="w-4 h-4 text-amber-600 rounded" 
+                                    />
+                                    <span className="text-sm font-bold text-slate-700">Yes, I own a residential/commercial property</span>
+                                </label>
+
+                                {isPropertyOwner && (
+                                    <div className="pl-4 border-l-2 border-amber-200 space-y-4 animate-in fade-in">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Property Location</label>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => setPropertyLocation('Urban')}
+                                                    className={`py-2 px-3 rounded-lg border text-sm font-bold transition-all ${propertyLocation === 'Urban' ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-white border-slate-200 text-slate-500'}`}
+                                                >
+                                                    Urban / Metro
+                                                </button>
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => setPropertyLocation('Rural')}
+                                                    className={`py-2 px-3 rounded-lg border text-sm font-bold transition-all ${propertyLocation === 'Rural' ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-white border-slate-200 text-slate-500'}`}
+                                                >
+                                                    Rural / Town
+                                                </button>
+                                            </div>
+                                            <p className="text-[10px] text-slate-400 mt-1">
+                                                * Urban properties typically offer higher valuation and easier liquidity for loan collateral.
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                             <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Upload Property Proof</label>
+                                             <div className={`relative border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all cursor-pointer group ${
+                                                propertyProofFile ? 'border-amber-400 bg-amber-50/50' : 'border-slate-300 hover:border-amber-400 hover:bg-white'
+                                             }`}>
+                                                 <input 
+                                                     type="file" 
+                                                     accept=".pdf,.jpg,.png"
+                                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                                     onChange={(e) => {
+                                                         if (e.target.files && e.target.files[0]) {
+                                                             setPropertyProofFile(e.target.files[0]);
+                                                         }
+                                                     }}
+                                                 />
+                                                 
+                                                 {propertyProofFile ? (
+                                                     <div className="flex items-center gap-2">
+                                                         <CheckCircle size={16} className="text-emerald-500" />
+                                                         <span className="text-xs font-bold text-slate-700">{propertyProofFile.name}</span>
+                                                     </div>
+                                                 ) : (
+                                                     <div className="flex flex-col items-center">
+                                                         <UploadCloud size={16} className="text-amber-400 mb-1" />
+                                                         <span className="text-xs font-bold text-slate-500">Upload Deed / Tax Receipt</span>
+                                                     </div>
+                                                 )}
+                                             </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Simulation Mode Content */}
                 {mode === 'simulation' && (

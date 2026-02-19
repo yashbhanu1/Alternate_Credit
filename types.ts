@@ -43,6 +43,8 @@ export interface PublicRecordData {
   propertyOwnership: boolean;
   businessRegistered: boolean; // GST etc
   noCriminalRecord: boolean;
+  propertyLocation?: 'Urban' | 'Rural'; // NEW: For high value loan assessment
+  estimatedPropertyValue?: number; // NEW: Estimated collateral value
 }
 
 // 6. Employment & Income

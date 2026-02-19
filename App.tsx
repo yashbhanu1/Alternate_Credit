@@ -54,7 +54,8 @@ const App: React.FC = () => {
         scoreResult.trustScore,
         scoreResult.features.averageBalance,
         selectedProfile.monthlyIncome,
-        selectedProfile.requestedLoanAmount || 0
+        selectedProfile.requestedLoanAmount || 0,
+        selectedProfile.public
       )
     : null;
 

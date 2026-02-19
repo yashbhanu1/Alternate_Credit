@@ -1,4 +1,4 @@
-import { EngineeredFeatures, RawSignals, ScoreResult } from '../types';
+import { EngineeredFeatures, RawSignals, ScoreResult, PublicRecordData } from '../types';
 
 // Helper: Calculate Standard Deviation
 const calculateStdDev = (values: number[]): number => {
@@ -52,7 +52,12 @@ export const engineerFeatures = (data: RawSignals): EngineeredFeatures => {
 
 
   // --- 5. Social Credibility (Network, Public Records) ---
-  const publicRecordBonus = (data.public.propertyOwnership ? 0.3 : 0) + (data.public.businessRegistered ? 0.2 : 0);
+  // Boost for property, extra boost if Urban
+  let propertyBonus = 0;
+  if (data.public.propertyOwnership) {
+      propertyBonus = data.public.propertyLocation === 'Urban' ? 0.4 : 0.3;
+  }
+  const publicRecordBonus = propertyBonus + (data.public.businessRegistered ? 0.2 : 0);
   const socialCredibility = Math.min(1, (data.social.socialConnectionsScore * 0.5) + publicRecordBonus + 0.2); // Base 0.2
 
 
@@ -119,7 +124,13 @@ export const calculateTrustScore = (features: EngineeredFeatures): ScoreResult =
 };
 
 // Evaluate a specific loan request
-export const evaluateLoanRequest = (trustScore: number, avgBalance: number, monthlyIncome: number, requestedAmount: number) => {
+export const evaluateLoanRequest = (
+  trustScore: number, 
+  avgBalance: number, 
+  monthlyIncome: number, 
+  requestedAmount: number,
+  publicData?: PublicRecordData
+) => {
   // Logic: 
   // 1. Determine leverage multiplier based on Trust Score quality
   // 2. Calculate Max Loan Limit based on Balance
@@ -133,8 +144,15 @@ export const evaluateLoanRequest = (trustScore: number, avgBalance: number, mont
   else if (trustScore >= 550) leverageMultiplier = 3;  // Low Trust: 3x
   else leverageMultiplier = 0;                         // No Trust: 0x
   
-  // Calculate Max Limit based on Balance
-  const maxLimit = Math.round(avgBalance * leverageMultiplier);
+  // Property Collateral Boost
+  let collateralBoost = 1;
+  if (publicData?.propertyOwnership) {
+      // Urban property significantly increases borrowing power due to higher valuation/liquidity
+      collateralBoost = publicData.propertyLocation === 'Urban' ? 3.0 : 1.5;
+  }
+
+  // Calculate Max Limit based on Balance * Leverage * Collateral
+  const maxLimit = Math.round(avgBalance * leverageMultiplier * collateralBoost);
   
   let status: 'approved' | 'rejected' | 'review' = 'approved';
   let reason = 'Approved based on Trust Score & Affordability.';
@@ -143,12 +161,23 @@ export const evaluateLoanRequest = (trustScore: number, avgBalance: number, mont
   // or more conservatively, shouldn't exceed Avg Balance (Disposable Income)
   const estimatedEMI = requestedAmount / 12;
 
+  // STRICT RULE: Loans > 500,000 REQUIRE Property Ownership
+  if (requestedAmount > 500000) {
+      if (!publicData?.propertyOwnership) {
+          return {
+              status: 'rejected',
+              reason: 'Loans exceeding ₹5,00,000 require property ownership as collateral/stability proof.',
+              maxLimit: 500000 // Cap at 500k
+          };
+      }
+  }
+
   if (trustScore < 550) {
     status = 'rejected';
     reason = 'Trust Score is below the minimum threshold (550).';
   } else if (requestedAmount > maxLimit) {
     status = 'rejected';
-    reason = `Requested amount (₹${requestedAmount.toLocaleString()}) exceeds maximum limit based on savings (₹${maxLimit.toLocaleString()}).`;
+    reason = `Requested amount (₹${requestedAmount.toLocaleString()}) exceeds maximum limit based on savings & collateral (₹${maxLimit.toLocaleString()}).`;
   } else if (estimatedEMI > monthlyIncome * 0.6) {
     status = 'rejected';
     reason = `Loan EMI (₹${estimatedEMI.toFixed(0)}) exceeds 60% of monthly income. High default risk.`;
