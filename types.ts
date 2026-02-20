@@ -42,6 +42,7 @@ export interface SocialData {
 export interface FlatProperty {
   bhk: number;
   estimatedValue: number;
+  hasProof?: boolean; // NEW: Indicates if proof document was uploaded
 }
 
 // 5. Public Records

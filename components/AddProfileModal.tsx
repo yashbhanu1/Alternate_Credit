@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Plus, Trash2, Calculator, Sparkles, AlertTriangle, Smartphone, MapPin, Phone, Users, CheckSquare, Square, IndianRupee, Wand2, RefreshCw, UploadCloud, FileText, CreditCard, Home, CheckCircle, Building } from 'lucide-react';
+import { X, Plus, Trash2, Calculator, Sparkles, AlertTriangle, Smartphone, MapPin, Phone, Users, CheckSquare, Square, IndianRupee, Wand2, RefreshCw, UploadCloud, FileText, CreditCard, Home, CheckCircle, Building, Paperclip } from 'lucide-react';
 import { RawSignals, FlatProperty } from '../types';
 
 interface AddProfileModalProps {
@@ -64,7 +64,7 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
   const [propertyProofFile, setPropertyProofFile] = useState<File | null>(null);
   const [propertyAcres, setPropertyAcres] = useState<string>('');
   const [propertyValue, setPropertyValue] = useState<string>('');
-  const [flats, setFlats] = useState<{id: number, bhk: string, value: string}[]>([]);
+  const [flats, setFlats] = useState<{id: number, bhk: string, value: string, proofFile: File | null}[]>([]);
 
   if (!isOpen) return null;
 
@@ -86,14 +86,14 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
   };
 
   const addFlat = () => {
-    setFlats([...flats, { id: Date.now(), bhk: '', value: '' }]);
+    setFlats([...flats, { id: Date.now(), bhk: '', value: '', proofFile: null }]);
   };
 
   const removeFlat = (id: number) => {
     setFlats(flats.filter(f => f.id !== id));
   };
 
-  const updateFlat = (id: number, field: 'bhk' | 'value', value: string) => {
+  const updateFlat = (id: number, field: 'bhk' | 'value' | 'proofFile', value: any) => {
     setFlats(flats.map(f => f.id === id ? { ...f, [field]: value } : f));
   };
 
@@ -168,7 +168,8 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
 
     const flatObjects: FlatProperty[] = flats.map(f => ({ 
         bhk: Number(f.bhk) || 0, 
-        estimatedValue: Number(f.value) || 0 
+        estimatedValue: Number(f.value) || 0,
+        hasProof: !!f.proofFile
     }));
     const totalFlatsValue = flatObjects.reduce((acc, f) => acc + f.estimatedValue, 0);
     
@@ -555,6 +556,22 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
                                                                 onChange={e => updateFlat(flat.id, 'value', e.target.value)} 
                                                             />
                                                         </div>
+
+                                                        {/* Individual Flat Proof Upload */}
+                                                        <label className={`p-2 rounded-lg cursor-pointer transition-colors ${flat.proofFile ? 'bg-emerald-50 text-emerald-600' : 'text-slate-400 hover:bg-slate-100 hover:text-blue-600'}`} title={flat.proofFile ? flat.proofFile.name : "Upload Proof"}>
+                                                            <input 
+                                                                type="file" 
+                                                                accept=".pdf,.jpg,.png"
+                                                                className="hidden"
+                                                                onChange={(e) => {
+                                                                    if (e.target.files && e.target.files[0]) {
+                                                                        updateFlat(flat.id, 'proofFile', e.target.files[0]);
+                                                                    }
+                                                                }}
+                                                            />
+                                                            {flat.proofFile ? <CheckCircle size={16} /> : <Paperclip size={16} />}
+                                                        </label>
+
                                                         <button 
                                                             type="button" 
                                                             onClick={() => removeFlat(flat.id)}
@@ -575,7 +592,7 @@ export const AddProfileModal: React.FC<AddProfileModalProps> = ({ isOpen, onClos
                                         </div>
 
                                         <div>
-                                             <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Upload Property Proof</label>
+                                             <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Upload Property Proof (Main)</label>
                                              <div className={`relative border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all cursor-pointer group ${
                                                 propertyProofFile ? 'border-amber-400 bg-amber-50/50' : 'border-slate-300 hover:border-amber-400 hover:bg-white'
                                              }`}>
